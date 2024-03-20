@@ -1,0 +1,77 @@
+#!/system/bin/sh
+
+boot_dir="/data/adb/boot/"
+backup_dir="$boot_dir/backups/"
+backup_suffix="backup"
+fastbootx="fastbootx"
+
+# Создание директорий, если они не существуют
+mkdir -p "$boot_dir" "$backup_dir"
+
+help=false
+other_slot=""
+backup=false
+restore=false
+clear=false
+
+# Разбор опций
+while getopts ":hobrc" opt; do
+  case ${opt} in
+    h ) help=true ;;
+    o ) other_slot="o" ;;
+    b ) backup=true ;;
+    r ) restore=true ;;
+    c ) clear=true ;;
+    \? ) echo "Invalid option: $OPTARG" 1>&2; exit 1 ;;
+  esac
+done
+shift $((OPTIND -1))
+
+# Очистка резервных копий, если запрошено
+if [ "$clear" = true ]; then
+    rm -r "$backup_dir"/*
+fi
+
+# Показать справочное сообщение, если запрошено или если аргументы не предоставлены
+if [ "$help" = true ] || [ -z "$1" ]; then
+    echo "Usage: switch-os [OPTIONS] [NAME OS]"
+    echo "Available options:"
+    echo "  -h        Display this help message."
+    echo "  -o        Use other slot."
+    echo "  -b        Create a backup."
+    echo "  -r        Restore a backup."
+    echo "  -c        Remove all backups."
+    exit 0
+fi
+
+osname="$1"
+
+# Обработка опции восстановления
+if [ "$restore" = true ] ; then
+    osname="$backup_suffix"
+    boot_dir="$boot_dir/backups_tmp"
+    mkdir -p "$boot_dir"
+    mv "$backup_dir"* "$boot_dir"
+fi
+
+# Обработка всех соответствующих файлов
+for file in "$boot_dir"*"$osname".img; do
+    partition=$(basename "$file" | cut -d' ' -f1 | tr -d '[]')
+    boot_file="$boot_dir[$partition] $osname.img"
+    if [[ ! -f "$boot_file" ]]; then
+        echo "No such file: d $boot_file"
+        exit 1
+    fi
+    if [ "$backup" = true ] ; then
+        $fastbootx flash "$partition" -$other_slot"yb" "$backup_dir[$partition] $backup_suffix.img" "$boot_file"
+    else
+        $fastbootx flash "$partition" -$other_slot"y" "$boot_file"
+    fi
+done
+
+# Очистка после восстановления
+if [ "$restore" = true ] ; then
+    rm -r "$boot_dir"
+fi
+
+$fastbootx slot -$other_slot"yr"

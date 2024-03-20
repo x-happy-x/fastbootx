@@ -1,0 +1,6 @@
+id=fastbootx
+name=fastbootx & switch-os
+version=v1.3
+versionCode=4
+author=...HappyEnd... (bootctl by Roee Hershberg)
+description=Adds 3 binaries: bootctl.bin for managing A/B slots, the fastbootx script for flashing partitions, and more, the switch-os script for quickly switching OS (flashing a group of images and changing the slot).
