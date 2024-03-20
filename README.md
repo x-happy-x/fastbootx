@@ -128,5 +128,3 @@ switch-os -b windows
 ## Credits
 - **Author**: [...HappyEnd...](https://github.com/roihershberg/bootctl-binary?tab=readme-ov-file) ([4PDA](https://4pda.to/forum/index.php?showuser=8611316))
 - **Bootctl**: [Roee Hershberg](https://github.com/roihershberg/bootctl-binary?tab=readme-ov-file)
-## License
-This module is licensed under the [MIT License](LICENSE).
